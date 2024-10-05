@@ -1,0 +1,14 @@
+[
+  {
+    "name": "br.com.itau.app.dto.PostDTO",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.itau.app.dto.RequestDTO",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  }
+]

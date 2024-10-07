@@ -150,17 +150,13 @@
                         </executions>
                         <configuration>
                             <buildArgs>
-                                <!-- Remova ou comente a linha abaixo -->
-                                <!-- <buildArg>-initialize-at-build-time=org.springframework.cloud.function.adapter.aws.FunctionInvoker</buildArg> -->
-
                                 <!-- Adicione a linha abaixo para inicializar o FunctionInvoker em tempo de execução -->
                                 <buildArg>--initialize-at-run-time=org.springframework.cloud.function.adapter.aws.FunctionInvoker</buildArg>
 
                                 <!-- Manter a inicialização em tempo de execução para org.apache.commons.logging e org.slf4j -->
                                 <buildArg>--initialize-at-run-time=org.apache.commons.logging,org.slf4j</buildArg>
 
-                                <!-- Opcionalmente, adicionar rastreamento de inicialização -->
-                                <buildArg>--trace-class-initialization=org.apache.commons.logging.LogAdapter,org.springframework.cloud.function.adapter.aws.FunctionInvoker</buildArg>
+                                <buildArg>--report-unsupported-elements-at-runtime</buildArg>
 
                                 <!-- Saída detalhada -->
                                 <buildArg>--verbose</buildArg>

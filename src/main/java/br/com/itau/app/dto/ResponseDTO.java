@@ -1,10 +1,16 @@
 package br.com.itau.app.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Data
 public class ResponseDTO {
+
+    @JsonProperty("resultado")
     private String resultado;
+
+    @JsonProperty("post")
     private PostDTO post;
 
     // Getters e Setters

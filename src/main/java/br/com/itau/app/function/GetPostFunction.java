@@ -1,6 +1,7 @@
 package br.com.itau.app.function;
 
 import br.com.itau.app.dto.PostDTO;
+import br.com.itau.app.dto.ResponseDTO;
 import br.com.itau.app.dto.RequestDTO;
 import br.com.itau.app.service.PostService;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,13 @@ public class GetPostFunction {
     }
 
     @Bean
-    public Function<RequestDTO, PostDTO> getPost() {
-        return request -> postService.getPost(request.getId());
+    public Function<RequestDTO, ResponseDTO> getPost() {
+        return request -> {
+            PostDTO post = postService.getPost(request.getId());
+            ResponseDTO response = new ResponseDTO();
+            response.setResultado("positivo"); // Define o resultado como "positivo"
+            response.setPost(post); // Inclui os dados do post, se desejar
+            return response;
+        };
     }
 }

@@ -10,5 +10,10 @@
     "allDeclaredConstructors": true,
     "allDeclaredMethods": true,
     "allDeclaredFields": true
+  },
+  {
+    "name": "org.springframework.cloud.function.adapter.aws.FunctionInvoker",
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
   }
 ]

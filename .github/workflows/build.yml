@@ -1,0 +1,60 @@
+name: Build, Package, and Deploy Lambda Function
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          graalvm-version: '22.3.0'
+          java-version: '17'
+          components: 'native-image'
+
+      - name: Set up Maven
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -Pnative
+
+      - name: Zip the function
+        run: |
+          cp target/lambda-graalvm bootstrap
+          zip function.zip bootstrap
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: function-zip
+          path: function.zip
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to AWS Lambda
+        run: |
+          aws lambda update-function-code --function-name your-function-name --zip-file fileb://function.zip

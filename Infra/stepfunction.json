@@ -1,75 +1,82 @@
 {
-  "Comment": "Step Function que processa uma mensagem SQS e invoca duas funções Lambda sequencialmente.",
-  "StartAt": "ReceberMensagemSQS",
+  "Comment": "Step Function para processar mensagens SQS via EventBridge Pipes",
+  "StartAt": "ChamarPrimeiraLambda",
   "States": {
-    "ReceberMensagemSQS": {
+    "ChamarPrimeiraLambda": {
       "Type": "Task",
-      "Resource": "arn:aws:states:::aws-sdk:sqs:receiveMessage",
-      "Parameters": {
-        "QueueUrl": "https://sqs.us-east-1.amazonaws.com/702630152734/fila-teste",
-        "MaxNumberOfMessages": 1,
-        "WaitTimeSeconds": 10
-      },
-      "ResultPath": "$.MensagemSQS",
-      "Next": "VerificarMensagemRecebida"
+      "Resource": "arn:aws:lambda:REGIÃO:ID_DA_CONTA:function:NomeDaPrimeiraLambda",
+      "InputPath": "$",
+      "ResultPath": "$.PrimeiraLambdaResultado",
+      "Next": "VerificarPrimeiraLambda",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "EnviarParaDLQ"
+        }
+      ]
     },
-    "VerificarMensagemRecebida": {
+    "VerificarPrimeiraLambda": {
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.MensagemSQS.Messages[0]",
-          "IsPresent": true,
-          "Next": "PrimeiraFuncaoLambda"
+          "Variable": "$.PrimeiraLambdaResultado.status",
+          "StringEquals": "success",
+          "Next": "ChamarSegundaLambda"
         }
       ],
-      "Default": "FimSemMensagem"
+      "Default": "EnviarParaDLQ"
     },
-    "PrimeiraFuncaoLambda": {
+    "ChamarSegundaLambda": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:702630152734:function:your-function-name",
-      "InputPath": "$.MensagemSQS.Messages[0].Body",
-      "ResultPath": "$.ResultadoPrimeiraFuncao",
-      "Next": "VerificarResultadoPrimeiraFuncao"
+      "Resource": "arn:aws:lambda:REGIÃO:ID_DA_CONTA:function:NomeDaSegundaLambda",
+      "InputPath": "$",
+      "ResultPath": "$.SegundaLambdaResultado",
+      "Next": "VerificarSegundaLambda",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "EnviarParaDLQ"
+        }
+      ]
     },
-    "VerificarResultadoPrimeiraFuncao": {
+    "VerificarSegundaLambda": {
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.ResultadoPrimeiraFuncao.Resultado",
-          "StringEquals": "positivo",
-          "Next": "SegundaFuncaoLambda"
+          "Variable": "$.SegundaLambdaResultado.status",
+          "StringEquals": "success",
+          "Next": "EncerrarExecucao"
         }
       ],
-      "Default": "FimResultadoNegativo"
+      "Default": "EnviarParaDLQ"
     },
-    "SegundaFuncaoLambda": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:702630152734:function:your-function-name",
-      "InputPath": "$.ResultadoPrimeiraFuncao",
-      "ResultPath": "$.ResultadoSegundaFuncao",
-      "Next": "VerificarResultadoSegundaFuncao"
-    },
-    "VerificarResultadoSegundaFuncao": {
-      "Type": "Choice",
-      "Choices": [
-        {
-          "Variable": "$.ResultadoSegundaFuncao.Resultado",
-          "StringEquals": "positivo",
-          "Next": "ConcluirComSucesso"
-        }
-      ],
-      "Default": "FimResultadoNegativo"
-    },
-    "ConcluirComSucesso": {
+    "EncerrarExecucao": {
       "Type": "Succeed"
     },
-    "FimSemMensagem": {
-      "Type": "Fail",
-      "Cause": "Nenhuma mensagem recebida da fila SQS."
-    },
-    "FimResultadoNegativo": {
-      "Type": "Fail",
-      "Cause": "O resultado da função Lambda foi negativo."
+    "EnviarParaDLQ": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage",
+      "Parameters": {
+        "QueueUrl": "https://sqs.REGIAO.amazonaws.com/ID_DA_CONTA/MinhaFilaDLQ",
+        "MessageBody.$": "$"
+      },
+      "End": true
     }
   }
 }

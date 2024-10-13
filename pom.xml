@@ -32,6 +32,7 @@
         <spring-cloud.version>2023.0.3</spring-cloud.version>
     </properties>
     <dependencies>
+        <!-- Suas dependências existentes -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -60,7 +61,6 @@
             <version>2.0.1</version>
         </dependency>
 
-
         <!-- OpenFeign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -82,8 +82,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
-
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -115,7 +113,13 @@
         </dependencies>
     </dependencyManagement>
 
-
+    <!-- Adicionar a seção de repositórios -->
+    <repositories>
+        <repository>
+            <id>graalvm-build-tools</id>
+            <url>https://repo.graalvm.org/repo</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -145,27 +149,24 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.9.25</version>
+                        <version>0.10.3</version> <!-- Manter a versão 0.10.3 -->
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>compile-no-fork</goal>
+                                    <goal>build</goal> <!-- Alterado para build -->
                                 </goals>
                             </execution>
                         </executions>
                         <configuration>
-                            <dockerBuild>true</dockerBuild>
+                            <dockerBuild>true</dockerBuild> <!-- Ativa a compilação via Docker -->
+                            <imageName>${project.artifactId}:native</imageName>
                             <buildArgs>
-                                <!-- Adicione a linha abaixo para inicializar o FunctionInvoker em tempo de execução -->
-
+                                <!-- Argumentos de compilação -->
                                 <buildArg>--initialize-at-run-time=org.springframework.cloud.function.adapter.aws.FunctionInvoker,br.com.itau.app.dto.RequestDTO,br.com.itau.app.dto.ResponseDTO</buildArg>
-
-                                <!-- Manter a inicialização em tempo de execução para org.apache.commons.logging e org.slf4j -->
                                 <buildArg>--initialize-at-run-time=org.apache.commons.logging,org.slf4j</buildArg>
                                 <buildArg>-H:ReflectionConfigurationResources=META-INF/native-image/reflect-config.json</buildArg>
                                 <buildArg>--report-unsupported-elements-at-runtime</buildArg>
-
-                                <!-- Saída detalhada -->
+                                <buildArg>--no-fallback</buildArg>
                                 <buildArg>--verbose</buildArg>
                             </buildArgs>
                         </configuration>

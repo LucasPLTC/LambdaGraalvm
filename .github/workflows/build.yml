@@ -27,13 +27,18 @@ jobs:
 
       - name: Build Native Image with Docker
         run: |
-          docker run --rm -v ${{ github.workspace }}:/app -w /app ghcr.io/graalvm/graalvm-ce:22.3.0 \
-            bash -c "gu install native-image && apt-get update && apt-get install -y maven && mvn clean package -Pnative"
+          docker build -t lambda-graalvm-native .
 
       - name: Extract the Native Image from Docker
         run: |
-          # Supondo que o build produza o binário no diretório target
-          cp target/lambda-graalvm-0.0.1-SNAPSHOT-native-image ./lambda-graalvm-native-image
+          # Criar um contêiner temporário a partir da imagem construída
+          container_id=$(docker create lambda-graalvm-native)
+          
+          # Copiar o binário nativo do contêiner para o host
+          docker cp $container_id:/app/target/lambda-graalvm-0.0.1-SNAPSHOT-native-image ./lambda-graalvm-native-image
+          
+          # Remover o contêiner temporário
+          docker rm $container_id
 
       - name: Zip the function
         run: |

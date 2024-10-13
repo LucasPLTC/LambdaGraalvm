@@ -1,21 +1,37 @@
-# Usar a imagem base do GraalVM com Maven instalado
-FROM ghcr.io/graalvm/graalvm-ce:22.3.0
+# Use Ubuntu como imagem base
+FROM ubuntu:22.04
 
-# Instalar o componente native-image
+# Defina variáveis de ambiente
+ENV GRAALVM_VERSION=22.3.0
+ENV GRAALVM_HOME=/opt/graalvm
+ENV JAVA_HOME=${GRAALVM_HOME}
+ENV PATH=${GRAALVM_HOME}/bin:${PATH}
+
+# Atualize o sistema e instale dependências
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    maven \
+    && rm -rf /var/lib/apt/lists/*
+
+# Baixe e instale GraalVM
+RUN wget https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-java17-linux-amd64-${GRAALVM_VERSION}.tar.gz \
+    && tar -xzf graalvm-ce-java17-linux-amd64-${GRAALVM_VERSION}.tar.gz -C /opt/ \
+    && rm graalvm-ce-java17-linux-amd64-${GRAALVM_VERSION}.tar.gz \
+    && ln -s /opt/graalvm-ce-java17-${GRAALVM_VERSION} /opt/graalvm
+
+# Instale o componente native-image
 RUN gu install native-image
 
-# Instalar o Maven (caso não esteja incluído na imagem)
-RUN apt-get update && apt-get install -y maven
-
-# Definir o diretório de trabalho
+# Defina o diretório de trabalho
 WORKDIR /app
 
-# Copiar o arquivo pom.xml e baixar as dependências
+# Copie o arquivo pom.xml e baixe as dependências
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copiar o restante dos arquivos do projeto
+# Copie o restante dos arquivos do projeto
 COPY src ./src
 
-# Compilar a native image usando o perfil 'native'
+# Compile a native image utilizando o perfil 'native'
 RUN mvn clean package -Pnative

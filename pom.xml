@@ -158,7 +158,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <dockerBuild>true</dockerBuild> <!-- Ativa a compilação via Docker -->
+<!--                            <dockerBuild>true</dockerBuild> &lt;!&ndash; Ativa a compilação via Docker &ndash;&gt;-->
                             <imageName>${project.artifactId}:native</imageName>
                             <buildArgs>
                                 <!-- Argumentos de compilação -->

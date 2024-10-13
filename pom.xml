@@ -159,7 +159,7 @@
                         </executions>
                         <configuration>
 <!--                            <dockerBuild>true</dockerBuild> &lt;!&ndash; Ativa a compilação via Docker &ndash;&gt;-->
-                            <imageName>${project.artifactId}:native</imageName>
+<!--                            <imageName>${project.artifactId}:native</imageName>-->
                             <buildArgs>
                                 <!-- Argumentos de compilação -->
                                 <buildArg>--initialize-at-run-time=org.springframework.cloud.function.adapter.aws.FunctionInvoker,br.com.itau.app.dto.RequestDTO,br.com.itau.app.dto.ResponseDTO</buildArg>
